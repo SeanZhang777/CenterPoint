@@ -1,9 +1,11 @@
 from .nuscenes import NuScenesDataset
 from .waymo import WaymoDataset
+from .maxus import MaxusDataset
 
 dataset_factory = {
     "NUSC": NuScenesDataset,
-    "WAYMO": WaymoDataset
+    "WAYMO": WaymoDataset,
+    "MAXUS": MaxusDataset
 }
 
 

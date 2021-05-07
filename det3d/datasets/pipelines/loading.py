@@ -9,6 +9,7 @@ from pathlib import Path
 from copy import deepcopy
 from det3d import torchie
 from det3d.core import box_np_ops
+from det3d.datasets.maxus import maxus_common as maxus
 import pickle 
 import os 
 from ..registry import PIPELINES
@@ -144,7 +145,7 @@ class LoadPointCloudFromFile(object):
             points = read_single_waymo(obj)
             res["lidar"]["points"] = points
 
-            if nsweeps > 1: 
+            if nsweeps > 1:
                 sweep_points_list = [points]
                 sweep_times_list = [np.zeros((points.shape[0], 1))]
 
@@ -166,6 +167,19 @@ class LoadPointCloudFromFile(object):
                 res["lidar"]["points"] = points
                 res["lidar"]["times"] = times
                 res["lidar"]["combined"] = np.hstack([points, times])
+
+        elif self.type == "MaxusDataset":
+            pc_info = info["point_cloud"]
+            pointcloud_path = Path(pc_info["pointcloud_path"])
+            if not pointcloud_path.is_absolute():
+                velo_path = (
+                    Path(res["metadata"]["image_prefix"]) / pc_info["pointcloud_path"]
+                )
+            points = np.fromfile(str(velo_path), dtype=np.float32, count=-1).reshape(
+                [-1, res["metadata"]["num_point_features"]]
+            )
+
+            res["lidar"]["points"] = points
         else:
             raise NotImplementedError
 
@@ -193,6 +207,23 @@ class LoadPointCloudAnnotations(object):
                 "boxes": info["gt_boxes"].astype(np.float32),
                 "names": info["gt_names"],
             }
+        elif res["type"] == "MaxusDataset":
+            if "annos" in info:
+                annos = info["annos"]
+                # we need other objects to avoid collision when sample
+                annos = maxus.remove_dontcare(annos)
+
+                gt_names = annos["name"]
+                gt_boxes = annos["box3d_lidar"]
+
+                res["lidar"]["annotations"] = {
+                    "boxes": gt_boxes,
+                    "names": gt_names,
+                }
+                res["cam"]["annotations"] = {
+                    "boxes": annos["bbox"],
+                    "names": gt_names,
+                }
         else:
             pass 
 

@@ -202,7 +202,7 @@ def main():
 
     if result_dict is not None:
         for k, v in result_dict["results"].items():
-            print(f"Evaluation {k}: {v}")
+            print(f"Evaluation {k}:\n{v}")
 
     if args.txt_result:
         assert False, "No longer support kitti"

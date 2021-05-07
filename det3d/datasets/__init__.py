@@ -1,8 +1,10 @@
 from .builder import build_dataset
 
 # from .cityscapes import CityscapesDataset
+from .maxus import MaxusDataset
 from .nuscenes import NuScenesDataset
 from .waymo import WaymoDataset
+
 
 # from .custom import CustomDataset
 from .dataset_wrappers import ConcatDataset, RepeatDataset
@@ -17,6 +19,7 @@ from .registry import DATASETS
 #
 __all__ = [
     "CustomDataset",
+    "MaxusDataset",
     "GroupSampler",
     "DistributedGroupSampler",
     "build_dataloader",

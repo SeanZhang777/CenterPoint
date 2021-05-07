@@ -7,6 +7,7 @@ import fire, os
 from det3d.datasets.nuscenes import nusc_common as nu_ds
 from det3d.datasets.utils.create_gt_database import create_groundtruth_database
 from det3d.datasets.waymo import waymo_common as waymo_ds
+from det3d.datasets.maxus import maxus_common as maxus_ds
 
 def nuscenes_data_prep(root_path, version, nsweeps=10, filter_zero=True):
     nu_ds.create_nuscenes_infos(root_path, version=version, nsweeps=nsweeps, filter_zero=filter_zero)
@@ -27,7 +28,12 @@ def waymo_data_prep(root_path, split, nsweeps=1):
             used_classes=['VEHICLE', 'CYCLIST', 'PEDESTRIAN'],
             nsweeps=nsweeps
         )
-    
+
+def maxus_data_prep(root_path):
+    maxus_ds.create_maxus_info_file(root_path)
+    create_groundtruth_database(
+        "MAXUS", root_path, Path(root_path) / "maxus_infos_train.pkl"
+    )
 
 if __name__ == "__main__":
     fire.Fire()

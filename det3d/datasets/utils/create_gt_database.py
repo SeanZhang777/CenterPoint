@@ -9,7 +9,8 @@ from tqdm import tqdm
 
 dataset_name_map = {
     "NUSC": "NuScenesDataset",
-    "WAYMO": "WaymoDataset"
+    "WAYMO": "WaymoDataset",
+    "MAXUS": "MaxusDataset"
 }
 
 
@@ -48,7 +49,7 @@ def create_groundtruth_database(
 
     root_path = Path(data_path)
 
-    if dataset_class_name in ["WAYMO", "NUSC"]: 
+    if dataset_class_name in ["WAYMO", "NUSC", "MAXUS"]:
         if db_path is None:
             db_path = root_path / f"gt_database_{nsweeps}sweeps_withvelo"
         if dbinfo_path is None:
@@ -59,7 +60,9 @@ def create_groundtruth_database(
     if dataset_class_name == "NUSC":
         point_features = 5
     elif dataset_class_name == "WAYMO":
-        point_features = 5 if nsweeps == 1 else 6 
+        point_features = 5 if nsweeps == 1 else 6
+    elif dataset_class_name == "MAXUS":
+        point_features = 4
     else:
         raise NotImplementedError()
 

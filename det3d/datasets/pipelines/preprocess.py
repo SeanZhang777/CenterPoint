@@ -56,6 +56,8 @@ class Preprocess(object):
                 points = res["lidar"]["points"]
         elif res["type"] in ["NuScenesDataset"]:
             points = res["lidar"]["combined"]
+        elif res["type"] in ["MaxusDataset"]:
+            points = res["lidar"]["points"]
         else:
             raise NotImplementedError
 
@@ -353,7 +355,9 @@ class AssignLabel(object):
                     # [reg, hei, dim, vx, vy, rots, rotc]
                     anno_box = np.zeros((max_objs, 10), dtype=np.float32)
                 elif res['type'] == 'WaymoDataset':
-                    anno_box = np.zeros((max_objs, 10), dtype=np.float32) 
+                    anno_box = np.zeros((max_objs, 10), dtype=np.float32)
+                elif res['type'] == 'MaxusDataset':
+                    anno_box = np.zeros((max_objs, 8), dtype=np.float32)
                 else:
                     raise NotImplementedError("Only Support nuScene for Now!")
 
@@ -409,6 +413,11 @@ class AssignLabel(object):
                             anno_box[new_idx] = np.concatenate(
                             (ct - (x, y), z, np.log(gt_dict['gt_boxes'][idx][k][3:6]),
                             np.array(vx), np.array(vy), np.sin(rot), np.cos(rot)), axis=None)
+                        elif res['type'] == 'MaxusDataset':
+                            rot = gt_dict['gt_boxes'][idx][k][-1]
+                            anno_box[new_idx] = np.concatenate(
+                            (ct - (x, y), z, np.log(gt_dict['gt_boxes'][idx][k][3:6]),
+                             np.sin(rot), np.cos(rot)), axis=None)
                         else:
                             raise NotImplementedError("Only Support Waymo and nuScene for Now")
 
@@ -426,6 +435,8 @@ class AssignLabel(object):
                 gt_boxes_and_cls = np.zeros((max_objs, 10), dtype=np.float32)
             elif res['type'] == "WaymoDataset":
                 gt_boxes_and_cls = np.zeros((max_objs, 10), dtype=np.float32)
+            elif res['type'] == "MaxusDataset":
+                gt_boxes_and_cls = np.zeros((max_objs, 8), dtype=np.float32)
             else:
                 raise NotImplementedError()
 
@@ -434,7 +445,10 @@ class AssignLabel(object):
             num_obj = len(boxes_and_cls)
             assert num_obj <= max_objs
             # x, y, z, w, l, h, rotation_y, velocity_x, velocity_y, class_name
-            boxes_and_cls = boxes_and_cls[:, [0, 1, 2, 3, 4, 5, 8, 6, 7, 9]]
+            if res['type'] == "MaxusDataset":
+                boxes_and_cls = boxes_and_cls[:, [0, 1, 2, 3, 4, 5, 6, 7]]
+            else:
+                boxes_and_cls = boxes_and_cls[:, [0, 1, 2, 3, 4, 5, 8, 6, 7, 9]]
             gt_boxes_and_cls[:num_obj] = boxes_and_cls
 
             example.update({'gt_boxes_and_cls': gt_boxes_and_cls})
